@@ -17,10 +17,13 @@
 curl -fsSL https://raw.githubusercontent.com/bobyasasas/kai-systemctl/main/install.sh | sh
 ```
 
-安装脚本也支持状态检查、升级和卸载：
+默认会进入交互式安装菜单，先显示安装路径、当前版本、最新版本和状态，然后输入序号选择安装、更新、卸载或退出。
+
+安装脚本也支持非交互状态检查、安装、升级和卸载：
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/bobyasasas/kai-systemctl/main/install.sh | sh -s status
+curl -fsSL https://raw.githubusercontent.com/bobyasasas/kai-systemctl/main/install.sh | sh -s install
 curl -fsSL https://raw.githubusercontent.com/bobyasasas/kai-systemctl/main/install.sh | sh -s upgrade
 curl -fsSL https://raw.githubusercontent.com/bobyasasas/kai-systemctl/main/install.sh | sh -s uninstall
 ```

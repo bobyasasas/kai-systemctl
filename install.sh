@@ -5,7 +5,7 @@ REPO="${REPO:-bobyasasas/kai-systemctl}"
 BIN="${BIN:-kai-systemctl}"
 INSTALL_DIR="${INSTALL_DIR:-/usr/local/bin}"
 
-cmd="${1:-install}"
+cmd="${1:-menu}"
 
 need() {
   command -v "$1" >/dev/null 2>&1 || {
@@ -76,6 +76,17 @@ installed_version() {
   fi
 }
 
+prompt_read() {
+  prompt="$1"
+  if [ -r /dev/tty ] && [ -w /dev/tty ] && { : < /dev/tty; } 2>/dev/null; then
+    printf "%s" "$prompt" > /dev/tty
+    IFS= read -r REPLY < /dev/tty
+  else
+    printf "%s" "$prompt"
+    IFS= read -r REPLY
+  fi
+}
+
 install_version() {
   version="$1"
   detect_platform
@@ -98,6 +109,26 @@ status() {
   current="$(installed_version)"
   path="$(installed_path)"
 
+  echo "binary: $BIN"
+  echo "path: $path"
+  echo "installed: $current"
+  echo "latest: $latest"
+  if [ "$current" = "$latest" ]; then
+    echo "status: up to date"
+  elif [ "$current" = "not installed" ]; then
+    echo "status: not installed"
+  else
+    echo "status: upgrade available"
+  fi
+}
+
+print_status() {
+  latest="$1"
+  current="$2"
+  path="$3"
+
+  echo "kai-systemctl installer"
+  echo
   echo "binary: $BIN"
   echo "path: $path"
   echo "installed: $current"
@@ -141,12 +172,72 @@ uninstall_cmd() {
   echo "removed $path"
 }
 
+menu_cmd() {
+  latest="$(latest_version)"
+  current="$(installed_version)"
+  path="$(installed_path)"
+
+  while :; do
+    echo
+    print_status "$latest" "$current" "$path"
+    echo
+    echo "1) Install latest"
+    echo "2) Upgrade"
+    echo "3) Uninstall"
+    echo "4) Refresh status"
+    echo "0) Exit"
+
+    if ! prompt_read "Select: "; then
+      echo
+      return 0
+    fi
+    choice="$REPLY"
+
+    case "$choice" in
+      1)
+        install_cmd
+        ;;
+      2)
+        upgrade_cmd
+        ;;
+      3)
+        if prompt_read "Uninstall $BIN from $path? [y/N]: "; then
+          confirm="$REPLY"
+        else
+          confirm=""
+        fi
+        case "$confirm" in
+          y|Y|yes|YES) uninstall_cmd ;;
+          *) echo "canceled" ;;
+        esac
+        ;;
+      4)
+        ;;
+      0|q|quit|exit)
+        return 0
+        ;;
+      *)
+        echo "unknown option: $choice"
+        ;;
+    esac
+
+    latest="$(latest_version)"
+    current="$(installed_version)"
+    path="$(installed_path)"
+  done
+}
+
 usage() {
   cat <<EOF
 kai-systemctl installer
 
 Usage:
-  sh install.sh [install|status|upgrade|uninstall]
+  sh install.sh [menu|install|status|upgrade|uninstall]
+
+Examples:
+  curl -fsSL https://raw.githubusercontent.com/${REPO}/main/install.sh | sh
+  curl -fsSL https://raw.githubusercontent.com/${REPO}/main/install.sh | sh -s status
+  curl -fsSL https://raw.githubusercontent.com/${REPO}/main/install.sh | sh -s upgrade
 
 Environment:
   REPO=bobyasasas/kai-systemctl
@@ -156,6 +247,7 @@ EOF
 }
 
 case "$cmd" in
+  menu) menu_cmd ;;
   install) install_cmd ;;
   status) status ;;
   upgrade) upgrade_cmd ;;

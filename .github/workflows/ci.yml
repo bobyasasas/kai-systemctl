@@ -29,9 +29,10 @@ jobs:
       - name: Build archives
         run: |
           mkdir -p dist
+          version="${GITHUB_REF_NAME}"
           for os in linux darwin; do
             for arch in amd64 arm64; do
-              GOOS=$os GOARCH=$arch go build -o dist/kai-systemctl ./cmd/kai-systemctl
+              GOOS=$os GOARCH=$arch go build -ldflags "-X main.version=${version}" -o dist/kai-systemctl ./cmd/kai-systemctl
               tar -C dist -czf dist/kai-systemctl_${os}_${arch}.tar.gz kai-systemctl
               rm dist/kai-systemctl
             done

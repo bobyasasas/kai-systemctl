@@ -20,6 +20,8 @@ import (
 
 const defaultDir = "/etc/systemd/system"
 
+var version = "dev"
+
 func main() {
 	if err := run(os.Args[1:]); err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
@@ -50,6 +52,9 @@ func run(args []string) error {
 		return runEdit(manager, args[1:])
 	case "enable", "disable", "start", "stop", "restart", "status":
 		return runAction(manager, args[0], args[1:])
+	case "version":
+		fmt.Println(version)
+		return nil
 	case "help", "-h", "--help":
 		return usage()
 	default:
@@ -271,6 +276,7 @@ func usageText() string {
 		"  " + bin + " delete <name>",
 		"  " + bin + " enable|disable|start|stop|restart|status <name>",
 		"  " + bin + " host 0.0.0.0 -port 8080",
+		"  " + bin + " version",
 		"",
 		"Run without arguments to open the interactive CLI.",
 		"",

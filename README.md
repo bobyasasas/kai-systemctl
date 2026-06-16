@@ -17,6 +17,14 @@
 curl -fsSL https://raw.githubusercontent.com/bobyasasas/kai-systemctl/main/install.sh | sh
 ```
 
+安装脚本也支持状态检查、升级和卸载：
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/bobyasasas/kai-systemctl/main/install.sh | sh -s status
+curl -fsSL https://raw.githubusercontent.com/bobyasasas/kai-systemctl/main/install.sh | sh -s upgrade
+curl -fsSL https://raw.githubusercontent.com/bobyasasas/kai-systemctl/main/install.sh | sh -s uninstall
+```
+
 ## CLI
 
 不加参数会进入交互式 CLI：
@@ -42,6 +50,7 @@ kai-systemctl rename demo api
 kai-systemctl start api
 kai-systemctl enable api
 kai-systemctl delete api
+kai-systemctl version
 ```
 
 用户传入 `demo`、`kai-demo`、`kai-demo.service` 都会规范化为：

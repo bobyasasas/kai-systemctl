@@ -63,20 +63,12 @@ func run(args []string) error {
 }
 
 func runWeb(manager *systemd.Manager, args []string) error {
-	fs := flag.NewFlagSet("host", flag.ExitOnError)
-	host := fs.String("host", "127.0.0.1", "listen host")
-	port := fs.String("port", "8080", "listen port")
-	if err := fs.Parse(args); err != nil {
+	host, port, err := parseWebArgs(args)
+	if err != nil {
 		return err
 	}
-	if fs.NArg() > 1 {
-		return fmt.Errorf("usage: kai-systemctl host [host] [-port 8080]")
-	}
-	if fs.NArg() == 1 {
-		*host = fs.Arg(0)
-	}
 
-	addr := *host + ":" + *port
+	addr := host + ":" + port
 	server := &http.Server{
 		Addr:              addr,
 		Handler:           web.NewServer(manager),
@@ -104,6 +96,62 @@ func runWeb(manager *systemd.Manager, args []string) error {
 		}
 		return err
 	}
+}
+
+func parseWebArgs(args []string) (string, string, error) {
+	host := "127.0.0.1"
+	port := "8080"
+	positional := make([]string, 0, 1)
+
+	for i := 0; i < len(args); i++ {
+		arg := args[i]
+		switch arg {
+		case "-host", "--host", "host":
+			i++
+			if i >= len(args) {
+				return "", "", fmt.Errorf("usage: kai-systemctl host [host] [-port 8080]")
+			}
+			host = args[i]
+		case "-port", "--port", "port":
+			i++
+			if i >= len(args) {
+				return "", "", fmt.Errorf("usage: kai-systemctl host [host] [-port 8080]")
+			}
+			port = args[i]
+		default:
+			if strings.HasPrefix(arg, "-host=") {
+				host = strings.TrimPrefix(arg, "-host=")
+				continue
+			}
+			if strings.HasPrefix(arg, "--host=") {
+				host = strings.TrimPrefix(arg, "--host=")
+				continue
+			}
+			if strings.HasPrefix(arg, "-port=") {
+				port = strings.TrimPrefix(arg, "-port=")
+				continue
+			}
+			if strings.HasPrefix(arg, "--port=") {
+				port = strings.TrimPrefix(arg, "--port=")
+				continue
+			}
+			if strings.HasPrefix(arg, "-") {
+				return "", "", fmt.Errorf("unknown host option %q", arg)
+			}
+			positional = append(positional, arg)
+		}
+	}
+
+	if len(positional) > 1 {
+		return "", "", fmt.Errorf("usage: kai-systemctl host [host] [-port 8080]")
+	}
+	if len(positional) == 1 {
+		host = positional[0]
+	}
+	if strings.TrimSpace(host) == "" || strings.TrimSpace(port) == "" {
+		return "", "", fmt.Errorf("host and port are required")
+	}
+	return host, port, nil
 }
 
 func runList(manager *systemd.Manager) error {

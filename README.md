@@ -5,7 +5,7 @@
 ## 功能
 
 - CLI 模式：默认命令就是 `kai-systemctl`
-- Web 模式：`kai-systemctl host -host 0.0.0.0 -port 8080`
+- Web 模式：`kai-systemctl host 0.0.0.0 -port 8080`
 - 支持新建、删除、重命名、编辑 service unit
 - 支持 `start`、`stop`、`restart`、`enable`、`disable`、`status`
 - 限制 unit 名称，避免路径穿越和误操作系统 unit
@@ -33,7 +33,7 @@ curl -fsSL https://raw.githubusercontent.com/bobyasasas/kai-systemctl/main/insta
 kai-systemctl
 ```
 
-交互式 CLI 支持服务列表、新建、查看、编辑、重命名、删除、执行 systemctl 动作，以及启动 Web 界面。
+交互式 CLI 支持服务列表、新建、查看、编辑、重命名、删除、执行 systemctl 动作，以及启动 Web 界面。需要选择已有 service 时，会先展示 `序号 + 名称` 列表，然后输入序号操作。
 
 ```sh
 kai-systemctl list
@@ -67,6 +67,13 @@ kai-systemctl version
 kai-systemctl host 0.0.0.0 -port 8080
 ```
 
+也兼容：
+
+```sh
+kai-systemctl host -host 0.0.0.0 -port 8080
+kai-systemctl host 0.0.0.0 port 8080
+```
+
 浏览器访问：
 
 ```text
@@ -81,7 +88,7 @@ http://服务器IP:8080
 
 ```sh
 sudo kai-systemctl new demo -exec "/bin/sleep infinity"
-sudo kai-systemctl host -host 0.0.0.0 -port 8080
+sudo kai-systemctl host 0.0.0.0 -port 8080
 ```
 
 ## 开发

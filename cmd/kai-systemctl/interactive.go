@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/bobyasasas/kai-systemctl/internal/systemd"
@@ -126,7 +127,7 @@ func (s *interactiveShell) create() error {
 }
 
 func (s *interactiveShell) show() error {
-	name, err := s.askRequired("Name")
+	name, err := s.selectUnit("Select unit")
 	if err != nil {
 		return err
 	}
@@ -140,7 +141,7 @@ func (s *interactiveShell) show() error {
 }
 
 func (s *interactiveShell) edit() error {
-	name, err := s.askRequired("Name")
+	name, err := s.selectUnit("Select unit")
 	if err != nil {
 		return err
 	}
@@ -158,7 +159,7 @@ func (s *interactiveShell) edit() error {
 }
 
 func (s *interactiveShell) rename() error {
-	oldName, err := s.askRequired("Old name")
+	oldName, err := s.selectUnit("Select unit")
 	if err != nil {
 		return err
 	}
@@ -175,7 +176,7 @@ func (s *interactiveShell) rename() error {
 }
 
 func (s *interactiveShell) delete() error {
-	name, err := s.askRequired("Name")
+	name, err := s.selectUnit("Select unit")
 	if err != nil {
 		return err
 	}
@@ -195,7 +196,7 @@ func (s *interactiveShell) delete() error {
 }
 
 func (s *interactiveShell) action() error {
-	name, err := s.askRequired("Name")
+	name, err := s.selectUnit("Select unit")
 	if err != nil {
 		return err
 	}
@@ -233,6 +234,38 @@ func (s *interactiveShell) openWeb() error {
 	}
 	fmt.Println("Starting web UI. Press Ctrl+C to stop.")
 	return runWeb(s.manager, []string{host, "-port", port})
+}
+
+func (s *interactiveShell) selectUnit(label string) (string, error) {
+	units, err := s.manager.List()
+	if err != nil {
+		return "", err
+	}
+	if len(units) == 0 {
+		return "", fmt.Errorf("no kai-managed units found")
+	}
+
+	fmt.Println(label + ":")
+	for i, unit := range units {
+		desc := unit.Description
+		if desc != "" {
+			desc = " - " + desc
+		}
+		fmt.Printf("%d) %s [%s/%s]%s\n", i+1, unit.Name, unit.LoadState, unit.ActiveState, desc)
+	}
+
+	for {
+		answer, err := s.ask("Number")
+		if err != nil {
+			return "", err
+		}
+		n, err := strconv.Atoi(answer)
+		if err != nil || n < 1 || n > len(units) {
+			fmt.Printf("Enter a number from 1 to %d.\n", len(units))
+			continue
+		}
+		return units[n-1].Name, nil
+	}
 }
 
 func (s *interactiveShell) ask(label string) (string, error) {

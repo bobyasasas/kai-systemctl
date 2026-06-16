@@ -19,6 +19,14 @@ curl -fsSL https://raw.githubusercontent.com/bobyasasas/kai-systemctl/main/insta
 
 ## CLI
 
+不加参数会进入交互式 CLI：
+
+```sh
+kai-systemctl
+```
+
+交互式 CLI 支持服务列表、新建、查看、编辑、重命名、删除、执行 systemctl 动作，以及启动 Web 界面。
+
 ```sh
 kai-systemctl list
 

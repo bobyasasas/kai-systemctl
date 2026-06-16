@@ -30,7 +30,7 @@ func main() {
 func run(args []string) error {
 	manager := systemd.NewManager(defaultDir)
 	if len(args) == 0 {
-		return usage()
+		return runInteractive(manager)
 	}
 
 	switch args[0] {
@@ -271,6 +271,8 @@ func usageText() string {
 		"  " + bin + " delete <name>",
 		"  " + bin + " enable|disable|start|stop|restart|status <name>",
 		"  " + bin + " host 0.0.0.0 -port 8080",
+		"",
+		"Run without arguments to open the interactive CLI.",
 		"",
 		"Unit names are normalized to kai-<name>.service.",
 	}
